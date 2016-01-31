@@ -30,54 +30,29 @@ function processLogEvent(obj) {
 
 function listContainers(cb) {
   docker.listContainers((err, containers) => {
+    let full = containers.map(c => {
+      return {
+        id: c.Id,
+        name: c.Names.join(' '),
+        _container: docker.getContainer(c.Id),
+      }
+    })
+    return cb(full)
+  })
+}
+
+function tailLogs(container, handlerFn) {
+  let opts = {stream: true, stdout: true, stderr: false}
+  container._container..attach(opts, function(err, stream) {
+    stream.on('data', function(chunk) {
+      handlerFn({
+        name: container.name,
+        data: chunk.toString(),
+      })
+    })
   })
 }
 
 listContainers(function(containers) {
   console.log(containers)
 })
-
-function tailLogs(container, handlerFn) {
-
-}
-
-
-
-//   containers.forEach(info => {
-//     console.log(info)
-//     let id = info.Id
-//     let name = info.Names.join(' ')
-//     let container = docker.getContainer(id)
-//     container.attach({stream: true, stdout: true, stderr: false}, function(err, stream) {
-//       stream.on('data', function(chunk) {
-//         processLogEvent({
-//           name: name,
-//           data: chunk.toString(),
-//         })
-//       })
-//     })
-//   })
-
-// my stream 
-
-// class MyStream extends stream.Duplex {
-
-//   constructor(options) {
-//     super({
-//       readableObjectMode : true,
-//       writableObjectMode: true
-//     });
-//   }
-
-//   _read(n) {
-//     // console.log('reading from sgream')
-//     this.push('my acutal data')
-//   }
-
-//   _write(chunk, enc, next) {
-//     // console.log(chunk)
-//     // next()
-//   }
-
-// }
-
