@@ -4,6 +4,11 @@ var fs = require('fs')
 var Docker = require('dockerode')
 var stream = require('stream')
 
+var level = require('level')
+var sublevel = require('level-sublevel')
+var db = sublevel(level('./store'))
+var _ = require('underscore')
+
 var host = 'tcp://192.168.99.100:2376'
 var host = '192.168.99.100'
 var port = 2376
@@ -17,26 +22,41 @@ var docker = new Docker({
   key: fs.readFileSync(certPath + '/key.pem')
 });
 
-function handleLogEvent(obj) {
+function processLogEvent(obj) {
   console.log(obj)
+  // emit event for websocket connection 
+  // store log
 }
 
-docker.listContainers((err, containers) => {
-  containers.forEach(info => {
-    console.log(info)
-    let id = info.Id
-    let name = info.Names.join(' ')
-    let container = docker.getContainer(id)
-    container.attach({stream: true, stdout: true, stderr: false}, function(err, stream) {
-      stream.on('data', function(chunk) {
-        handleLogEvent({
-          name: name,
-          data: chunk.toString(),
-        })
-      })
-    })
+function listContainers(cb) {
+  docker.listContainers((err, containers) => {
   })
+}
+
+listContainers(function(containers) {
+  console.log(containers)
 })
+
+function tailLogs(container, handlerFn) {
+
+}
+
+
+
+//   containers.forEach(info => {
+//     console.log(info)
+//     let id = info.Id
+//     let name = info.Names.join(' ')
+//     let container = docker.getContainer(id)
+//     container.attach({stream: true, stdout: true, stderr: false}, function(err, stream) {
+//       stream.on('data', function(chunk) {
+//         processLogEvent({
+//           name: name,
+//           data: chunk.toString(),
+//         })
+//       })
+//     })
+//   })
 
 // my stream 
 
