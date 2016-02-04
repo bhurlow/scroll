@@ -1,5 +1,6 @@
 (ns scroll.docker
   (:require [org.httpkit.client :as http]
+            [org.httpkit.server :refer :all]
             [cheshire.core :as json]
             [less.awful.ssl :refer (ssl-context)]
             [manifold.stream :as s]))
@@ -20,24 +21,94 @@
 
 (defn make-req [path stream?]
   (let [engine (.createSSLEngine ctx)]
+    (println "MAKING REQ")
     (http/request {:sslengine engine
                    :url (str host path)
-                   :as (if stream? :stream :auto)
+                   ; :as (if stream? :stream :auto)
+                   :as :stream
                    :method :get})))
+
+(def log-url 
+  (str host "/containers/39220889e1c67f313e8dc017eb81696cdf3184c64845de3c71b2d8d6723d0960/logs?stdout=1&follow=1"))
+
+; (def log-url 
+;   (str host "/containers/39220889e1c67f313e8dc017eb81696cdf3184c64845de3c71b2d8d6723d0960/logs?stdout=1&tail=10"))
+
+(defn log-req []
+  (let [engine (.createSSLEngine ctx)]
+    @(http/request {:sslengine engine}
+                   :keepalive 30000
+                   :url log-url
+                   :method :get)))
 
 (defn list-containers []
   (let [res @(make-req "/containers/json" false)]
     (-> (:body res)
         (json/parse-string true)
         (->> (map #(select-keys % [:Names :Id])))))) 
+
+(defn log-stream [id]
+  (:body
+    @(make-req (str "/containers/" id "/logs?stdout=1&follow=1") false)))
+
+(defn buffer [id]
+  (byte-streams/convert
+    (log-stream id) 
+    java.nio.ByteBuffer))
+
+(def target "39220889e1c67f313e8dc017eb81696cdf3184c64845de3c71b2d8d6723d0960")
+
+(defn consume-heap [buffer]
+  (while (.hasRemaining buffer)
+    (prn (.get buffer))))
+
              
 (defn stream-logs [id]
-  (let [res @(make-req (str "/containers/" id "/logs") true)]
-    res))
+  (let [stream (log-stream id)]
+    (println stream) 
+    (loop [stream stream]
+      (while (pos? (.available stream))
+        (prn (.read stream))))))
+       
 
-              
+;; ===== testing streaming =====
 
+; (defonce server (atom nil))
 
+; (defn pump-channel [channel]
+;   (dotimes [i 20]
+;     (println "OPEN?" (open? channel))
+;     (println "IN DOTIMES" i)
+;     (Thread/sleep 300)
+;     (if (= i 19)
+;       (send! channel (str "event" i))
+;       (send! channel (str "event" i) false))))
 
+; (defn handler [req]
+;   (with-channel req channel
+;     (pump-channel channel)))
+
+; (defn start-server []
+;   (reset! server (run-server handler {:port 9090})))
+
+; (defn stop-server []
+;   (@server :timeout 100))
+  
+; (stop-server)
+; (start-server)
+
+;; ===== testing streamin client =====
+
+;; can't seem to get client to return stream until
+;; all channel writes have happened????
+
+; @(http/get "http://localhost:9090" {:as :stream})
+
+; (http/get "http://localhost:9090" {:as :stream}
+;           (fn [req] 
+;             (println "got req")
+;             (println "->" req)))
+  
+  
 
 
