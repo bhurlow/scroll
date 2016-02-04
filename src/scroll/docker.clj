@@ -28,6 +28,32 @@
     {:name container-name
      :val log}))
 
+;; ===== manifold streams =====
+
+; (while true (println "GIT" @(s/take! mystream)))
+
+; (def test-stream 
+;   (s/->source (range 50)))
+
+; (->> test-stream
+;      (s/map inc)
+;      (s/map (fn [x] {:key x}))
+;      (s/stream->seq))
+
+; (->> (s/->source (range 10))
+;      (s/map (fn [x] {:key x}))
+;      (s/take!)
+;      (d/unwrap)
+;      (:key))
+
+; (->> (log-stream cid)
+;      (s/map (fn [x] {:key x}))
+;      (s/take!)
+;      (d/unwrap)
+;      (:key))
+     
+
+
 ; (def log-url 
 ;   (str host "/containers/39220889e1c67f313e8dc017eb81696cdf3184c64845de3c71b2d8d6723d0960/logs?stdout=1&follow=1"))
 
