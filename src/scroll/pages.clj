@@ -8,10 +8,14 @@
 (defn cljs-deps []
   [:head (include-js "/goog/base.js" "/main.js")])
 
+(defn cljs-starter []
+  [:script {:type "text/javascript"} "goog.require('frontend.core');"])
+
 (defn index []
   (html 
     (cljs-deps)
     [:div#world "world"]
     [:h1 "SAAA"]
     [:h2 "A"] 
-    [:script {:type "text/javascript"} "goog.require('frontend.core');"]))
+    (cljs-starter)))
+    

@@ -22,10 +22,18 @@
     (doseq [s streams]
       (s/consume db/insert-log-entry s))))
 
+(defn handle-ws [req]
+  (let [s @(http/websocket-connection req)
+        src (s/throttle 1 (s/->source (repeatedly 100 #(str (rand-int 100)))))]
+    (println "USING WS" s)
+    (s/connect src s)
+    "dealing with ws"))
+
 ;; ===== routes =====
 
 (defroutes app
   (GET "/" [] (pages/index))
+  (GET "/ws" req (handle-ws req))
   (not-found "<h1>Page not found</h1>"))
 
 (def handler

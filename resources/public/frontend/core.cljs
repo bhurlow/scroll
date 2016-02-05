@@ -23,3 +23,5 @@
       (fn [x] 
         (swap! app-state update-in [:streams] conj "YLOL")))  
 
+(let [ws (new js/WebSocket "ws://localhost:3000/ws")]
+  (aset ws "onmessage" (fn [x] (println (aget x "data")))))
