@@ -14,4 +14,4 @@
      :output-dir "resources/public"
      :parallel-build true}))
 
-(.start (Thread. (watch)))
+; (future (watch))

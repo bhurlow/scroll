@@ -24,9 +24,10 @@
 
 (defn handle-ws [req]
   (let [s @(http/websocket-connection req)
-        src (s/throttle 1 (s/->source (repeatedly 100 #(str (rand-int 100)))))]
-    (println "USING WS" s)
-    (s/connect src s)
+        log-streams (docker/all-streams)]
+    ;; map all streams to ws
+    (doseq [ls log-streams]
+      (s/connect (s/map str ls) s))
     "dealing with ws"))
 
 ;; ===== routes =====
