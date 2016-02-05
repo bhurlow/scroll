@@ -6,15 +6,14 @@
             [manifold.stream :as s]))
 
 (def host "http://192.168.99.100:5000")
-(def cid "51dc365dcffd")
+(def cid "f8b8c66ed5c8")
 
 (defn list-containers []
   (-> @(http/get (str host "/containers/json"))
        :body
        bs/to-string
        (json/parse-string true)
-       (->> (map #(select-keys % [:Names :Id])))
-       prn))
+       (->> (map #(select-keys % [:Names :Id])))))
 
 (defn log-stream [id]
   (-> @(http/get (str host "/containers/" id "/logs?stdout=1&tail=10&follow=1"))
@@ -24,9 +23,22 @@
 
 (defn annotate [container-name]
   (fn [log] 
-    (println "annotating" log)
     {:name container-name
      :val log}))
+
+(defn annotated-log-stream [name id] 
+  (->> (log-stream id)
+       (s/map (fn [x] {:name name :val x}))))
+
+(defn container->stream [container]
+  (annotated-log-stream 
+    (:Names container) 
+    (:Id container)))
+
+(defn all-streams []
+  (let [containers (list-containers)
+        streams (map container->stream containers)]
+    streams))
 
 ;; ===== manifold streams =====
 
