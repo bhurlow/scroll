@@ -28,6 +28,10 @@
        (map bs/to-char-sequence)
        (map #(lev/delete db %))))
 
+;; must make two puts for our two different
+;; lookup indexes 
+;; 1. for all time ordered logs
+;; 2. for ordered logs for a given container name
 (defn insert-log-entry [entry]
   (let [ms (System/currentTimeMillis)
         name (reduce str (:name entry))
