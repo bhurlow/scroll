@@ -14,6 +14,7 @@
 (defonce active-streams (atom nil))
 
 (defn cleanup []
+  (println "closing" (count @active-streams) " hanging streams")
   (map s/close! @active-streams))
 
 (defn stream-logs-to-db []
@@ -25,15 +26,22 @@
 (defn handle-ws [req]
   (let [s @(http/websocket-connection req)
         log-streams (docker/all-streams)]
+    (reset! active-streams log-streams)
+    (println "receieved websocket request")
+    (s/on-closed s cleanup)
     ;; map all streams to ws
     (doseq [ls log-streams]
       (s/connect (s/map str ls) s))
     "dealing with ws"))
 
+(defn send-containers []
+  (pr-str (doall (docker/list-containers))))
+
 ;; ===== routes =====
 
 (defroutes app
   (GET "/" [] (pages/index))
+  (GET "/containers" [] (send-containers))
   (GET "/ws" req (handle-ws req))
   (not-found "<h1>Page not found</h1>"))
 

@@ -14,8 +14,11 @@
 (defn index []
   (html 
     (cljs-deps)
-    [:div#world "world"]
-    [:h1 "SAAA"]
-    [:h2 "A"] 
+    [:section
+      [:h2 "Running Containers"]
+      [:div#containers]]
+    [:section
+     [:h2 "Logs"]
+     [:div#stream "world"]]
     (cljs-starter)))
     

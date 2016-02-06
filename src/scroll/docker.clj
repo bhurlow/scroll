@@ -16,6 +16,7 @@
        (->> (map #(select-keys % [:Names :Id])))))
 
 (defn log-stream [id]
+  (println "requesting logs for container" id)
   (-> @(http/get (str host "/containers/" id "/logs?stdout=1&tail=10&follow=1"))
        :body
        (bs/to-line-seq)

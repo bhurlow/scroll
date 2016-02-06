@@ -1,4 +1,4 @@
-(defproject scroll "0.1.0-SNAPSHOT"
+(defproject scroll "0.0.1"
   :main scroll.core
   :license {:name "MIT" :url "http://brianhurlow.com"}
   :plugins [[lein-cljsbuild "1.1.2"]]
@@ -13,11 +13,5 @@
                  [cheshire "5.5.0"]
                  [manifold "0.1.1"]
                  [hiccup "1.0.5"]
-                 [compojure "1.4.0"]]
-  :cljsbuild {
-              :builds [{ 
-                        :source-paths ["src-cljs"]
-                        :compiler {:output-to "main.js"
-                                   :optimizations :whitespace
-                                   :parallel-build true}}]})
+                 [compojure "1.4.0"]])
                                    
